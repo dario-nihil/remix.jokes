@@ -51,5 +51,11 @@ export const links: LinksFunction = () => {
 };
 
 export const loader = async () => {
-  return json({ jokeListItems: await db.joke.findMany() });
+  return json({
+    jokeListItems: await db.joke.findMany({
+      take: 5,
+      select: { id: true, name: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  });
 };
