@@ -1,7 +1,9 @@
 import { Outlet, Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import type { LinksFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
+import type { LinksFunction } from "@remix-run/node";
 
+import { getUser } from "../utils/session.server";
 import { db } from "../utils/db.server";
 import styles from "../styles/jokes.css";
 
@@ -18,6 +20,18 @@ const JokesRoute = () => {
               <span className="logo-medium">J🤪KES</span>
             </Link>
           </h1>
+          {data.user ? (
+            <div className="user-info">
+              <span>{`Hi ${data.user.username}`}</span>
+              <form action="/logout" method="post">
+                <button type="submit" className="button">
+                  Logout
+                </button>
+              </form>
+            </div>
+          ) : (
+            <Link to="/login">Login</Link>
+          )}
         </div>
       </header>
       <main className="jokes-main">
@@ -51,12 +65,17 @@ export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: styles }];
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader = async ({ request }: LoaderArgs) => {
+  const jokeListItems = await db.joke.findMany({
+    take: 5,
+    select: { id: true, name: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const user = await getUser(request);
+
   return json({
-    jokeListItems: await db.joke.findMany({
-      take: 5,
-      select: { id: true, name: true },
-      orderBy: { createdAt: "desc" },
-    }),
+    jokeListItems,
+    user,
   });
 };
