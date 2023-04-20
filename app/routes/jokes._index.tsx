@@ -1,4 +1,3 @@
-import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 
@@ -18,7 +17,7 @@ const JokesIndexRoute = () => {
 
 export default JokesIndexRoute;
 
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   const count = await db.joke.count();
   const randomRowNumber = Math.floor(Math.random() * count);
   const [randomJoke] = await db.joke.findMany({
